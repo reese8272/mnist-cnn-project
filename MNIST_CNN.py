@@ -7,7 +7,7 @@ and Artificial Intelligence at https://www.coursera.org/learn/introduction-tenso
 
 import tensorflow as tf
 
-(training_data, training_label), _ = tf.keras.datasets.mnist.load_data()
+(training_data, training_labels), (validation_images, validation_labels) = tf.keras.datasets.mnist.load_data()
 
 def reshape_and_normalize(images):
     """Reshapes the array of images and normalizes pixel values.
@@ -29,8 +29,9 @@ def reshape_and_normalize(images):
 
     return images
 
-(training_images, _), _ = tf.keras.datasets.mnist.load_data()
+(training_images, training_labels),(validation_images, validation_labels) = tf.keras.datasets.mnist.load_data()
 training_images = reshape_and_normalize(training_images)
+validation_images = reshape_and_normalize(validation_images)
 
 class EarlyStoppingCallback(tf.keras.callbacks.Callback):
     '''
@@ -74,7 +75,8 @@ model = ConvolutionalModel()
 # run our model, set our epochs, and instill the callback
 model.fit(
     training_images,
-    training_label,
+    training_labels,
+    validation_data = (validation_images,validation_labels),
     epochs = 15,
     callbacks = [EarlyStoppingCallback()]
 )
