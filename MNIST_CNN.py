@@ -38,8 +38,8 @@ class EarlyStoppingCallback(tf.keras.callbacks.Callback):
     Will Stop our model once we reach 99.5% accuracy.
     '''
     def on_epoch_end(self, epoch, logs = None):
-        if logs['accuracy'] >= 0.995:
-            print("Accuracy hit 99.5%, stopping epochs.")
+        if logs['accuracy'] >= 0.995 and logs['val_accuracy'] > 0.95:
+            print("\nTraining accuracy hit 99.5%. Validation accuracy hit 95%, stopping epochs.")
             self.model.stop_training = True
 
 def ConvolutionalModel():
