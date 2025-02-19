@@ -64,11 +64,19 @@ def ConvolutionalModel():
         tf.keras.Input(shape = (28,28,1)),
         tf.keras.layers.Conv2D(64, (3,3), activation = 'relu'),
         tf.keras.layers.MaxPooling2D(2,2),
-        tf.keras.layers.Conv2D(64, (3,3), activation = 'relu'),
+        tf.keras.layers.BatchNormalization(),
+        
+        tf.keras.layers.Conv2D(128, (3,3), activation = 'relu'),
         tf.keras.layers.MaxPooling2D(2,2),
+        tf.keras.layers.BatchNormalization(),
+        
+        tf.keras.layers.Conv2D(512, (3,3), activation = 'relu'),
+        tf.keras.layers.MaxPooling2D(2,2),
+        tf.keras.layers.BatchNormalization(),
+        
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dropout(0.1),
-        tf.keras.layers.Dense(128, activation = 'relu'),
+        tf.keras.layers.Dense(512, activation = 'relu'),
+        tf.keras.layers.Dropout(0.5),
         tf.keras.layers.Dense(10, activation = 'softmax')
     ])
     return model
@@ -77,9 +85,9 @@ def ConvolutionalModel():
 data_augmentation = tf.keras.Sequential([
     tf.keras.Input(shape = (28,28,1)),
     tf.keras.layers.RandomFlip('horizontal'),
-    tf.keras.layers.RandomRotation(0.2, fill_mode = 'nearest'),
-    tf.keras.layers.RandomTranslation(0.2,0.2, fill_mode = 'nearest'),
-    tf.keras.layers.RandomZoom(0.2, fill_mode = 'nearest')
+    tf.keras.layers.RandomRotation(0.1, fill_mode = 'nearest'),
+    tf.keras.layers.RandomTranslation(0.1,0.1, fill_mode = 'nearest'),
+    tf.keras.layers.RandomZoom(0.1, fill_mode = 'nearest')
 ])
 
 #create our official model
@@ -95,7 +103,7 @@ def create_final_model():
     ])
     #Compile Model
     model_with_aug.compile(
-    optimizer = tf.keras.optimizers.Adam(learning_rate=0.001),
+    optimizer = 'adam',
     loss = 'sparse_categorical_crossentropy',
     metrics = ['accuracy']
     )
@@ -104,13 +112,13 @@ def create_final_model():
 
 
 final_model = create_final_model()
-# run our model, set our epochs, and instill the callback. We set epochs and batch size numbers arbitrarily.
+# run our model, set our epochs, and instill the callback. We set epochs arbitrarily.
 final_model.fit(
     training_images,
     training_labels,
     validation_data = (validation_images,validation_labels),
-    epochs = 30,
-    batch_size = 16,
+    epochs = 100,
+    steps_per_epoch = 750,
     callbacks = [EarlyStoppingCallback()]
 )
 #TODO: Create a Model that fits the callback sequence for accracy AND validation accuracy
