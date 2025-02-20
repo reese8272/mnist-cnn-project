@@ -38,18 +38,25 @@ def reshape_and_normalize(images):
 training_images = reshape_and_normalize(training_images)
 validation_images = reshape_and_normalize(validation_images)
 
+BATCH_SIZE = 64
+BUFFER_SIZE = 1000
+
+train_ds = tf.data.Dataset.from_tensor_slices((training_images, training_labels))
+train_ds = train_ds.shuffle(BUFFER_SIZE).batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
+
+val_ds = tf.data.Dataset.from_tensor_slices((validation_images, validation_labels))
+val_ds = val_ds.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
+
 
 class EarlyStoppingCallback(tf.keras.callbacks.Callback):
     '''
-    - Stops training when accuracy reaches 99.5% or validation accuracy reaches 98%.
+    - Stops training when accuracy reaches 99.5% and validation accuracy reaches 98%.
     '''
 
     def on_epoch_end(self, epoch, logs=None):
-        logs = logs or {}
-
         # Check if we should stop training
-        if logs.get("accuracy") >= 0.995 or logs.get("val_accuracy") >= 0.98:
-            print("\n✅ Training accuracy hit 99.5% / Validation accuracy hit 98%. Stopping training.")
+        if logs["accuracy"] >= 0.995 and logs["val_accuracy"] >= 0.98:
+            print(f"\n✅ Training accuracy hit 99.5% and Validation accuracy hit 98%. Stopping training.")
             self.model.stop_training = True
 
 
@@ -62,6 +69,10 @@ def ConvolutionalModel():
     
     model = tf.keras.models.Sequential([
         tf.keras.Input(shape = (28,28,1)),
+        tf.keras.layers.Conv2D(32, (3,3), activation = 'relu'),
+        tf.keras.layers.MaxPooling2D(2,2),
+        tf.keras.layers.BatchNormalization(),
+        
         tf.keras.layers.Conv2D(64, (3,3), activation = 'relu'),
         tf.keras.layers.MaxPooling2D(2,2),
         tf.keras.layers.BatchNormalization(),
@@ -69,19 +80,15 @@ def ConvolutionalModel():
         tf.keras.layers.Conv2D(128, (3,3), activation = 'relu'),
         tf.keras.layers.MaxPooling2D(2,2),
         tf.keras.layers.BatchNormalization(),
-        
-        tf.keras.layers.Conv2D(512, (3,3), activation = 'relu'),
-        tf.keras.layers.MaxPooling2D(2,2),
-        tf.keras.layers.BatchNormalization(),
-        
+
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(512, activation = 'relu'),
-        tf.keras.layers.Dropout(0.5),
+        tf.keras.layers.Dense(256, activation = 'relu'),
+        tf.keras.layers.Dropout(0.1),
         tf.keras.layers.Dense(10, activation = 'softmax')
     ])
     return model
-
-# Augment Data for better training
+'''
+# Augment Data for better training. Not Necessary for MNIST, but a good practice for other datasets.
 data_augmentation = tf.keras.Sequential([
     tf.keras.Input(shape = (28,28,1)),
     tf.keras.layers.RandomFlip('horizontal'),
@@ -89,6 +96,7 @@ data_augmentation = tf.keras.Sequential([
     tf.keras.layers.RandomTranslation(0.1,0.1, fill_mode = 'nearest'),
     tf.keras.layers.RandomZoom(0.1, fill_mode = 'nearest')
 ])
+'''
 
 #create our official model
 def create_final_model():
@@ -98,9 +106,10 @@ def create_final_model():
     '''
     model_without_aug = ConvolutionalModel()
     model_with_aug = tf.keras.models.Sequential([
-        data_augmentation,
+    # Where we'd put our augmented model (data_augmentation)
         model_without_aug
     ])
+    
     #Compile Model
     model_with_aug.compile(
     optimizer = 'adam',
@@ -114,13 +123,10 @@ def create_final_model():
 final_model = create_final_model()
 # run our model, set our epochs, and instill the callback. We set epochs arbitrarily.
 final_model.fit(
-    training_images,
-    training_labels,
-    validation_data = (validation_images,validation_labels),
-    epochs = 100,
-    steps_per_epoch = 750,
+    train_ds,
+    validation_data = val_ds,
+    epochs = 15, # Model should stop before the 15th epoch
     callbacks = [EarlyStoppingCallback()]
 )
-#TODO: Create a Model that fits the callback sequence for accracy AND validation accuracy
-# Because I had added augmentation and dropout, the model will not get as good as it once was
-# However, I believe this is still good practice for larger datasets
+#TODO: Create a Model that fits the callback sequence for accracy AND validation accuracy when adding the augmentation (commented out)
+# For more general datasets, the augmentation is good. But for this simple dataset, it's not needed.
