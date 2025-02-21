@@ -28,7 +28,7 @@ This project is my first convolutional neural network using TensorFlow! It class
 ## How to Run
 Run the script using Python:
 ```bash
-python MNistTest.py
+python MNIST_CNN.py
 ```
 
 ## How It Works
@@ -37,12 +37,12 @@ python MNistTest.py
 3. A convolutional neural network is defined with the following architecture:
    - Two Conv2D layers followed by MaxPooling2D layers
    - Flatten layer to convert 2D features into 1D
-   - Dense layer with 128 units and ReLU activation
+   - Dense layer with 64 units and ReLU activation
    - Output Dense layer with 10 units and softmax activation for classification
 4. Early stopping is implemented to halt training once the model achieves 99.5% accuracy.
 
 ## Results
-The model is designed to stop training once it hits 99.5% accuracy on the training set. This ensures efficient use of resources and prevents overfitting.
+The model is designed to stop training once it hits 99% accuracy on the training set and 98% accuracy on the validation set. This ensures efficient use of resources and prevents overfitting.
 
 ## Acknowledgments
 - Thanks to [DeepLearning.ai](https://www.coursera.org/learn/introduction-tensorflow) for their course that guided the creation of this project.
