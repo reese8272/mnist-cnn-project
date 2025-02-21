@@ -9,6 +9,8 @@ and Artificial Intelligence at https://www.coursera.org/learn/introduction-tenso
 import os
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
+import time
+import math
 import tensorflow as tf
 
 
@@ -55,9 +57,14 @@ class EarlyStoppingCallback(tf.keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         # Check if we should stop training
-        if logs["accuracy"] >= 0.995 and logs["val_accuracy"] >= 0.98:
-            print(f"\n✅ Training accuracy hit 99.5% and Validation accuracy hit 98%. Stopping training.")
+        if logs["accuracy"] >= 0.99 and logs["val_accuracy"] >= 0.98:
+            print(f"\n✅ Training accuracy hit 99% and Validation accuracy hit 98%. Stopping training.")
             self.model.stop_training = True
+
+LAYER_1 = 32
+LAYER_2 = 64
+LAYER_3 = 64
+FINAL_LAYER = 64
 
 
 def ConvolutionalModel():
@@ -69,20 +76,20 @@ def ConvolutionalModel():
     
     model = tf.keras.models.Sequential([
         tf.keras.Input(shape = (28,28,1)),
-        tf.keras.layers.Conv2D(32, (3,3), activation = 'relu'),
+        tf.keras.layers.Conv2D(LAYER_1, (3,3), activation = 'relu'),
         tf.keras.layers.MaxPooling2D(2,2),
         tf.keras.layers.BatchNormalization(),
         
-        tf.keras.layers.Conv2D(64, (3,3), activation = 'relu'),
+        tf.keras.layers.Conv2D(LAYER_2, (3,3), activation = 'relu'),
         tf.keras.layers.MaxPooling2D(2,2),
         tf.keras.layers.BatchNormalization(),
         
-        tf.keras.layers.Conv2D(128, (3,3), activation = 'relu'),
+        tf.keras.layers.Conv2D(LAYER_3, (3,3), activation = 'relu'),
         tf.keras.layers.MaxPooling2D(2,2),
         tf.keras.layers.BatchNormalization(),
 
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(256, activation = 'relu'),
+        tf.keras.layers.Dense(FINAL_LAYER, activation = 'relu'),
         tf.keras.layers.Dropout(0.1),
         tf.keras.layers.Dense(10, activation = 'softmax')
     ])
@@ -122,11 +129,22 @@ def create_final_model():
 
 final_model = create_final_model()
 # run our model, set our epochs, and instill the callback. We set epochs arbitrarily.
+
+start = time.time()
 final_model.fit(
     train_ds,
     validation_data = val_ds,
     epochs = 15, # Model should stop before the 15th epoch
     callbacks = [EarlyStoppingCallback()]
 )
+end = time.time()
+
+time_to_take = end-start
+
+minutes = math.floor(time_to_take / 60)
+seconds = (time_to_take % 60)
+print(f"Neural Network with 3 Convolutions -> {LAYER_1}, {LAYER_2}, {LAYER_3}. Final Dense Layer -> {FINAL_LAYER}")
+print(f"It took {minutes} minutes and {seconds} seconds to complete that.")
+
 #TODO: Create a Model that fits the callback sequence for accracy AND validation accuracy when adding the augmentation (commented out)
 # For more general datasets, the augmentation is good. But for this simple dataset, it's not needed.
