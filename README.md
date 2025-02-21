@@ -4,7 +4,7 @@ This project is my first convolutional neural network using TensorFlow! It class
 
 ## Features
 - Utilizes Conv2D layers for image classification
-- Implements early stopping once 99.5% accuracy is achieved
+- Implements early stopping once 99% accuracy is achieved
 - Achieves high accuracy on training data
 
 ## Requirements
