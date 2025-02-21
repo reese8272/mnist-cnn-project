@@ -52,7 +52,7 @@ val_ds = val_ds.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
 
 class EarlyStoppingCallback(tf.keras.callbacks.Callback):
     '''
-    - Stops training when accuracy reaches 99.5% and validation accuracy reaches 98%.
+    - Stops training when accuracy reaches 99% and validation accuracy reaches 98%.
     '''
 
     def on_epoch_end(self, epoch, logs=None):
